@@ -1,4 +1,3 @@
-const sequelize    = require('../config/database');
 const Faculty        = require('./Faculty');
 const Department     = require('./Department');
 const Course         = require('./Course');
@@ -13,7 +12,8 @@ Course.belongsTo(Department,   { foreignKey: 'department_id' });
 Course.hasMany(DocumentHust,   { foreignKey: 'course_id' });
 DocumentHust.belongsTo(Course, { foreignKey: 'course_id' });
 
-sequelize.sync();
+Course.hasMany(DocumentHust,   { foreignKey: 'course_id' });
+DocumentHust.belongsTo(Course, { foreignKey: 'course_id' });
 
 module.exports = {
   Faculty,

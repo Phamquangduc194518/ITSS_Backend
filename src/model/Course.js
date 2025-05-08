@@ -1,7 +1,6 @@
 const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 const Department = require('./Department');
-const DocumentHust = require('./DocumentHust');
 
 class Course extends Model {}
 
@@ -36,7 +35,5 @@ Course.init(
     timestamps: false,
   }
 );
-Course.hasMany(DocumentHust,   { foreignKey: 'course_id' });
-DocumentHust.belongsTo(Course, { foreignKey: 'course_id' });
 
 module.exports = Course

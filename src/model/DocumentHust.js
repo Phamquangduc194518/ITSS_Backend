@@ -1,6 +1,5 @@
 const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
-const Department = require('./Department');
 const Course = require('./Course');
 class DocumentHust extends Model {}
 
