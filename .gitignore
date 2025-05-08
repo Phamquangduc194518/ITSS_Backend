@@ -1,0 +1,11 @@
+# Node modules
+node_modules/
+
+# Biến môi trường
+.env
+
+# IDE/editor folders
+.vscode/
+.idea/
+
+package-lock.json
