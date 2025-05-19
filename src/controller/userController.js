@@ -141,36 +141,26 @@ const register = async (req, res) => {
   };
   const filterDocuments = async (req, res) => {
   const { year_id, department_id, course_id } = req.query;
+  const where = {};
+  if (year_id)         where.year_id               = year_id;
+  if (department_id)   where['$course.department_id$'] = department_id;
+  if (course_id)       where['$course.id$']          = course_id;
+
   try {
-    const whereDoc = {};
-    if (year_id) whereDoc.year_id = year_id;
-    const includeCourse = {
-      model: Course,
-      attributes: ['id', 'name', 'code', 'department_id'],
-      where: {},
-      include: [
-        {
-          model: Department,
-          attributes: ['id', 'name', 'faculty_id'],
-          where: {},
-          include: [
-            {
-              model: Faculty,
-              attributes: ['id', 'name']
-            }
-          ]
-        }
-      ]
-    };
-    if (course_id) {
-      includeCourse.where.id = course_id;
-    }
-    if (department_id) {
-      includeCourse.include[0].where.id = department_id;
-    }
     const docs = await DocumentHust.findAll({
-      where: whereDoc,
-      include: [ includeCourse ]
+      where,
+      include: [{
+        model: Course,
+        attributes: ['id','name','department_id'],
+        include: [{
+          model: Department,
+          attributes: ['id','name','faculty_id'],
+          include: [{
+            model: Faculty,
+            attributes: ['id','name']
+          }]
+        }]
+      }]
     });
 
     return res.json({ data: docs });
@@ -179,6 +169,7 @@ const register = async (req, res) => {
     return res.status(500).json({ message: 'Server error filtering documents' });
   }
 };
+
 module.exports ={
     register,
     login,
