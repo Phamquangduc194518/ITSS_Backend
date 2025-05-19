@@ -11,5 +11,6 @@ router.put('/documents/:id', authenticateToken, UserController.updateDocumentByU
 router.delete('/documents/:id',authenticateToken, UserController.deleteDocumentByUser);
 
 router.get('/documents/search', UserController.searchDocumentsByUser);
+router.get('/documents/filter', UserController.filterDocuments);
 
 module.exports = router;
