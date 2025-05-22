@@ -232,7 +232,7 @@ const getDocumentById = async (req, res) => {
 };
 
 const getProfile = async (req, res) => {
-  const { userId } = req.user.id;
+  const userId  = req.user.id;
   try {
     const user = await User.findOne({
       where:{id: userId}
