@@ -15,6 +15,10 @@ Course.init(
         type: DataTypes.STRING, 
         allowNull: false 
     },
+    imgUrl: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
     code: { 
         type: DataTypes.STRING, 
         allowNull: true, 

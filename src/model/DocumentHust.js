@@ -1,6 +1,7 @@
 const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 const Course = require('./Course');
+const User = require('./User');
 class DocumentHust extends Model {}
 
 DocumentHust.init(
@@ -21,6 +22,10 @@ DocumentHust.init(
     file_path: {
       type: DataTypes.STRING,
       allowNull: false,
+    },
+    imgUrl: {
+      type: DataTypes.STRING,
+      allowNull: true,
     },
     course_id: {
         type: DataTypes.INTEGER,
@@ -48,5 +53,4 @@ DocumentHust.init(
     timestamps: true,
   }
 );
-
 module.exports = DocumentHust

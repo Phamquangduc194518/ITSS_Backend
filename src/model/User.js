@@ -47,6 +47,18 @@ User.init(
       type: DataTypes.ENUM("normal", "admin"),
       defaultValue: "normal",
     },
+    school: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    faculty: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    school_year: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
   },
   {
     sequelize,

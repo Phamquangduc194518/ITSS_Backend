@@ -17,12 +17,12 @@ const getFaculties = async (req, res) => {
 };
 
 const createFaculty = async (req, res) => {
-  const { name, introduce } = req.body;
+  const { name, imageUrl} = req.body;
   if (!name) return res.status(400).json({ message: 'Missing faculty name' });
   try {
     const exists = await Faculty.findOne({ where: { name } });
     if (exists) return res.status(400).json({ message: 'Faculty already exists' });
-    const faculty = await Faculty.create({ name, introduce });
+    const faculty = await Faculty.create({ name, imageUrl});
     res.status(201).json({ data: faculty });
   } catch (error) {
     console.error('createFaculty error', error);
@@ -64,7 +64,16 @@ const deleteFaculty = async (req, res) => {
 
 const getDepartments = async (req, res) => {
   try {
-    const data = await Department.findAll();
+    const data = await Department.findAll({
+      attributes: ['id', 'name'], 
+      include: [
+        {
+          model: Faculty,
+          attributes: ['id', 'name'], 
+        },
+      ],
+    });
+
     res.json({ data });
   } catch (error) {
     console.error('getDepartments error', error);
@@ -129,12 +138,12 @@ const getCourses = async (req, res) => {
 };
 
 const createCourse = async (req, res) => {
-  const { name, code, department_id } = req.body;
+  const { name, code, department_id, imgUrl } = req.body;
   if (!name || !department_id) return res.status(400).json({ message: 'Missing fields' });
   try {
     const exists = await Course.findOne({ where: { name, department_id } });
     if (exists) return res.status(400).json({ message: 'Course exists in department' });
-    const course = await Course.create({ name, code, department_id });
+    const course = await Course.create({ name, code, department_id, imgUrl });
     res.status(201).json({ data: course });
   } catch (error) {
     console.error('createCourse error', error);
@@ -251,7 +260,7 @@ const deleteDocumentByAdmin = async (req, res) => {
 const getUser = async(req, res)=>{
     try{
         const users= await User.findAll()
-        return res.status(200).json(users) 
+        return res.status(200).json({data:users}) 
     }catch(error){
         return res.status(500).json({ message: "Không có người dùng nào" });
     }

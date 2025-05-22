@@ -16,9 +16,14 @@ Faculty.init({
       },
     introduce: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
         unique: true,
       },
+    imageUrl:{
+      type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,
+    }
     },
     {
       sequelize,
