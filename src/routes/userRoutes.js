@@ -17,4 +17,9 @@ router.get('/courses', UserController.getCourses);
 router.get('/documents/:id', UserController.getDocumentById);
 router.get('/getProfile',authenticateToken,UserController.getProfile);
 
+router.post('/comments',authenticateToken,UserController.createRating);
+router.get('/comments/:documentId',UserController.getComment);
+router.post('/comments/:commentId/react', authenticateToken, UserController.reactToComment);
+router.get('/byUser/documents', authenticateToken, UserController.getDocumentsByUser);
+
 module.exports = router;

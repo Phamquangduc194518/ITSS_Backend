@@ -3,7 +3,8 @@ const bcrypt = require('bcryptjs');
 const User = require('../model/User');
 const Faculty = require('../model/Faculty');
 const { Op } = require('sequelize');
-const { Course, DocumentHust, Department } = require('../model');
+const { Course, DocumentHust, Department, Comment } = require('../model');
+const CommentReaction = require('../model/CommentReaction');
 
 const register = async (req, res) => {
   const { username, email, password, role } = req.body;
@@ -188,7 +189,7 @@ const getDocuments = async (req, res) => {
   try {
     const data = await DocumentHust.findAll({
       limit: 6,
-      where:{
+      where: {
         status: "approved"
       },
       order: [['createdAt', 'DESC']],
@@ -218,27 +219,27 @@ const getDocuments = async (req, res) => {
   }
 };
 
-const getCourses = async (req, res) =>{
-  try{
+const getCourses = async (req, res) => {
+  try {
     const course = await Course.findAll(
       {
-        include :[
+        include: [
           {
             model: Department,
-              attributes: ['id', 'name'],
-              include: [
-                {
-                  model: Faculty,
-                  attributes: ['id', 'name']
-                }
-              ]
+            attributes: ['id', 'name'],
+            include: [
+              {
+                model: Faculty,
+                attributes: ['id', 'name']
+              }
+            ]
           }
         ]
       }
     )
 
-    res.json({ data: course})
-  }catch (error) {
+    res.json({ data: course })
+  } catch (error) {
     console.error('getCourses error', error);
     res.status(500).json({ message: 'Server error listing getCourses' });
   }
@@ -249,7 +250,11 @@ const getDocumentById = async (req, res) => {
   try {
     const doc = await DocumentHust.findByPk(id, {
       include: [
-        { model: Course, attributes: ['id', 'name'], include: [{ model: Department, attributes: ['id', 'name'] }] },
+        { model: Course, attributes: ['id', 'name'], include: [{ model: Department, attributes: ['id', 'name'] }]},
+        {
+          model: User,
+          attributes: ['id', 'username', 'avatar_url', 'email'] 
+        }
       ]
     });
     if (!doc) return res.status(404).json({ message: 'Document not found' });
@@ -261,10 +266,10 @@ const getDocumentById = async (req, res) => {
 };
 
 const getProfile = async (req, res) => {
-  const userId  = req.user.id;
+  const userId = req.user.id;
   try {
     const user = await User.findOne({
-      where:{id: userId}
+      where: { id: userId }
     })
     res.json({ data: user });
   } catch (error) {
@@ -273,6 +278,115 @@ const getProfile = async (req, res) => {
   }
 };
 
+const createRating = async (req, res) => {
+  try {
+    const { document_id, content, rating } = req.body;
+    const user_id = req.user.id;
+    if (!document_id || !content) {
+      return res.status(400).json({ message: 'Thiếu thông tin bắt buộc' });
+    }
+    const comment = await Comment.create({
+      content,
+      rating,
+      user_id,
+      document_id,
+    });
+     res.status(201).json({data:comment});
+  } catch(error){
+    console.error('rating error', error);
+    res.status(500).json({ message: 'Server error fetching rating' });
+  }
+}
+
+const getComment = async(req, res) =>{
+  try {
+    const { documentId } = req.params;
+    const comments = await Comment.findAll({
+      where: { document_id: documentId },
+      include: [{ model: User, attFFributes: ['username', 'avatar_url'] }],
+      order: [['createdAt', 'DESC']],
+    });
+
+    res.status(201).json({data:comments});
+  } catch (error) {
+    console.error('[getCommentsByDocument]', error);
+    res.status(500).json({ message: 'Lỗi khi lấy comment', error });
+  }
+}
+
+const reactToComment = async (req, res) => {
+  const { commentId } = req.params;
+  const { userId, type } = req.body;
+
+  if (!['like', 'dislike'].includes(type)) {
+    return res.status(400).json({ message: 'Invalid type' });
+  }
+
+  try {
+    let existing = await CommentReaction.findOne({
+      where: { comment_id: commentId, user_id: userId }
+    });
+
+    if (existing) {
+      if (existing.type === type) {
+        await existing.destroy();
+      } else {
+        existing.type = type;
+        await existing.save();
+      }
+    } else {
+      await CommentReaction.create({
+        comment_id: commentId,
+        user_id: userId,
+        type
+      });
+    }
+
+    const [likeCount, dislikeCount] = await Promise.all([
+      CommentReaction.count({ where: { comment_id: commentId, type: 'like' } }),
+      CommentReaction.count({ where: { comment_id: commentId, type: 'dislike' } })
+    ]);
+    await Comment.update(
+      { like_count: likeCount, dislike_count: dislikeCount },
+      { where: { id: commentId } }
+    );
+
+    res.json({ commentId, likeCount, dislikeCount });
+  } catch (err) {
+    console.error('React to comment error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+const getDocumentsByUser = async (req, res) => {
+  const userId = req.user.id;
+
+  try {
+    const docs = await DocumentHust.findAll({
+      where: { user_id: userId },
+      include: [
+        {
+          model: Course,
+          include: [
+            {
+              model: Department,
+              include: [Faculty],
+            },
+          ],
+        },
+        {
+          model: User,
+          attributes: ['id', 'username', 'email', 'avatar_url'],
+        }
+      ]
+    });
+
+    res.json({ data: docs });
+  } catch (error) {
+    console.error('Lỗi khi lấy tài liệu của người dùng:', error);
+    res.status(500).json({ message: 'Lỗi server' });
+  }
+};
 module.exports = {
   register,
   login,
@@ -284,5 +398,9 @@ module.exports = {
   getDocuments,
   getDocumentById,
   getProfile,
-  getCourses
+  getCourses,
+  createRating,
+  getComment,
+  reactToComment,
+  getDocumentsByUser
 }

@@ -2,7 +2,7 @@ const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 const Course = require('./Course');
 const User = require('./User');
-class DocumentHust extends Model {}
+class DocumentHust extends Model { }
 
 DocumentHust.init(
   {
@@ -28,15 +28,26 @@ DocumentHust.init(
       allowNull: true,
     },
     course_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references:{
-            model: Course,
-            key: "id"
-        },
-        onDelete: 'CASCADE',
-        onUpdate: 'CASCADE'
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: Course,
+        key: "id"
       },
+      onDelete: 'CASCADE',
+      onUpdate: 'CASCADE'
+    },
+    user_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: User,
+        key: 'id',
+      },
+      onDelete: 'CASCADE',
+      onUpdate: 'CASCADE',
+    },
+
     year_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
