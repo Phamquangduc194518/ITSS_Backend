@@ -78,10 +78,10 @@ const login = async (req, res) => {
 };
 
 const createDocumentByUser = async (req, res) => {
-  const { title, description, file_path, course_id, year_id } = req.body;
+  const { title, description, file_path, course_id, year_id, imgUrl } = req.body;
   if (!title || !file_path || !course_id || !year_id) return res.status(400).json({ message: 'Missing fields' });
   try {
-    const doc = await DocumentHust.create({ title, description, file_path, course_id, year_id });
+    const doc = await DocumentHust.create({ title, description, file_path, course_id, year_id, imgUrl });
     res.status(201).json({ data: doc });
   } catch (error) {
     console.error('createDocument error', error);
@@ -188,6 +188,9 @@ const getDocuments = async (req, res) => {
   try {
     const data = await DocumentHust.findAll({
       limit: 6,
+      where:{
+        status: "approved"
+      },
       order: [['createdAt', 'DESC']],
       include: [
         {
@@ -214,6 +217,32 @@ const getDocuments = async (req, res) => {
     res.status(500).json({ message: 'Server error listing documents' });
   }
 };
+
+const getCourses = async (req, res) =>{
+  try{
+    const course = await Course.findAll(
+      {
+        include :[
+          {
+            model: Department,
+              attributes: ['id', 'name'],
+              include: [
+                {
+                  model: Faculty,
+                  attributes: ['id', 'name']
+                }
+              ]
+          }
+        ]
+      }
+    )
+
+    res.json({ data: course})
+  }catch (error) {
+    console.error('getCourses error', error);
+    res.status(500).json({ message: 'Server error listing getCourses' });
+  }
+}
 
 const getDocumentById = async (req, res) => {
   const { id } = req.params;
@@ -254,5 +283,6 @@ module.exports = {
   filterDocuments,
   getDocuments,
   getDocumentById,
-  getProfile
+  getProfile,
+  getCourses
 }
