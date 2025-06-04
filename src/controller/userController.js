@@ -79,10 +79,10 @@ const login = async (req, res) => {
 };
 
 const createDocumentByUser = async (req, res) => {
-  const { title, description, file_path, course_id, year_id, imgUrl } = req.body;
-  if (!title || !file_path || !course_id || !year_id) return res.status(400).json({ message: 'Missing fields' });
+  const { title, description, file_path, course_id, year_id, imgUrl,user_id } = req.body;
+  if (!title || !file_path || !course_id || !year_id || user_id) return res.status(400).json({ message: 'Missing fields' });
   try {
-    const doc = await DocumentHust.create({ title, description, file_path, course_id, year_id, imgUrl });
+    const doc = await DocumentHust.create({ title, description, file_path, course_id, year_id, imgUrl, user_id: req.user.id });
     res.status(201).json({ data: doc });
   } catch (error) {
     console.error('createDocument error', error);
